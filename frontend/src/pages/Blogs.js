@@ -1,10 +1,10 @@
 
-
 // import { useState, useEffect } from "react";
 // import "../App.css";
 // import bgVideo from "../assets/background.mp4";
 // import { Link, useNavigate } from "react-router-dom";
 
+// /* Blogger feed (JSONP – reliable for list) */
 // const BLOGGER_JSONP_URL =
 //   "https://sinhasynopsis.blogspot.com/feeds/posts/default?alt=json-in-script&callback=bloggerCallback";
 
@@ -14,7 +14,7 @@
 //   const navigate = useNavigate();
 
 //   /* =========================
-//      LOAD BLOGS (JSONP)
+//      LOAD BLOG LIST (SAFE)
 //   ========================= */
 //   useEffect(() => {
 //     window.bloggerCallback = (data) => {
@@ -22,15 +22,18 @@
 
 //       const formatted = entries.map((entry, index) => {
 //         const text = entry.content.$t.replace(/<[^>]+>/g, "");
+//         const postUrl = entry.link.find(
+//           (l) => l.rel === "alternate"
+//         ).href;
 
 //         return {
 //           id: index,
-//           postId: entry.id.$t,               // 👈 used for routing
 //           title:
 //             entry.title.$t.length > 42
 //               ? entry.title.$t.slice(0, 39) + "…"
 //               : entry.title.$t,
 //           excerpt: text.split(".")[0],
+//           postUrl: encodeURIComponent(postUrl), // 🔑 CRITICAL
 //           tilt: (Math.random() * 10 - 5).toFixed(1),
 //           color: `hsl(${index * 32 % 360}, 55%, 60%)`
 //         };
@@ -70,7 +73,7 @@
 //         </nav>
 //       </header>
 
-//       {/* BOOK LIBRARY */}
+//       {/* BOOKSHELF */}
 //       <section className="library">
 //         {books.map((book) => {
 //           const isActive = activeBook === book.id;
@@ -92,12 +95,12 @@
 //                 <span className="book-title">{book.title}</span>
 //               </div>
 
-//               {/* BOOK DETAIL (CLICK → OPEN BLOG PAGE) */}
+//               {/* BOOK PREVIEW */}
 //               <div
 //                 className="book-detail clickable"
 //                 onClick={(e) => {
-//                   e.stopPropagation();                 // 👈 prevents closing
-//                   navigate(`/blog/${book.postId}`);   // 👈 internal reader
+//                   e.stopPropagation();
+//                   navigate(`/blog/${book.postUrl}`);
 //                 }}
 //               >
 //                 <h3>{book.title}</h3>
@@ -111,7 +114,7 @@
 //         })}
 //       </section>
 
-//       {/* CLICK OUTSIDE TO CLOSE */}
+//       {/* BACKDROP */}
 //       {activeBook !== null && (
 //         <div
 //           className="backdrop"
@@ -124,32 +127,39 @@
 
 // export default Blogs;
 
-import { useState, useEffect } from "react";
+
+
+
+import { useState, useEffect, useRef } from "react";
 import "../App.css";
 import bgVideo from "../assets/background.mp4";
 import { Link, useNavigate } from "react-router-dom";
 
-/* Blogger feed (JSONP – reliable for list) */
+const CALLBACK_NAME = "__bloggerFeedCallback__";
+
 const BLOGGER_JSONP_URL =
-  "https://sinhasynopsis.blogspot.com/feeds/posts/default?alt=json-in-script&callback=bloggerCallback";
+  "https://sinhasynopsis.blogspot.com/feeds/posts/default" +
+  "?alt=json-in-script&callback=" +
+  CALLBACK_NAME;
 
 function Blogs() {
   const [books, setBooks] = useState([]);
   const [activeBook, setActiveBook] = useState(null);
   const navigate = useNavigate();
+  const scriptRef = useRef(null);
 
-  /* =========================
-     LOAD BLOG LIST (SAFE)
-  ========================= */
   useEffect(() => {
-    window.bloggerCallback = (data) => {
-      const entries = data.feed.entry || [];
+    // 1️⃣ define global callback BEFORE loading script
+    window[CALLBACK_NAME] = (data) => {
+      const entries = data?.feed?.entry || [];
 
       const formatted = entries.map((entry, index) => {
-        const text = entry.content.$t.replace(/<[^>]+>/g, "");
-        const postUrl = entry.link.find(
+        const rawText = entry.content?.$t || "";
+        const cleanText = rawText.replace(/<[^>]+>/g, "");
+
+        const postUrl = entry.link?.find(
           (l) => l.rel === "alternate"
-        ).href;
+        )?.href;
 
         return {
           id: index,
@@ -157,23 +167,29 @@ function Blogs() {
             entry.title.$t.length > 42
               ? entry.title.$t.slice(0, 39) + "…"
               : entry.title.$t,
-          excerpt: text.split(".")[0],
-          postUrl: encodeURIComponent(postUrl), // 🔑 CRITICAL
+          excerpt: cleanText.split(".")[0],
+          postUrl: encodeURIComponent(postUrl),
           tilt: (Math.random() * 10 - 5).toFixed(1),
-          color: `hsl(${index * 32 % 360}, 55%, 60%)`
+          color: `hsl(${(index * 32) % 360}, 55%, 60%)`,
         };
       });
 
       setBooks(formatted);
     };
 
+    // 2️⃣ inject JSONP script ONCE
     const script = document.createElement("script");
     script.src = BLOGGER_JSONP_URL;
+    script.async = true;
     document.body.appendChild(script);
+    scriptRef.current = script;
 
+    // 3️⃣ cleanup
     return () => {
-      delete window.bloggerCallback;
-      document.body.removeChild(script);
+      if (scriptRef.current) {
+        document.body.removeChild(scriptRef.current);
+      }
+      delete window[CALLBACK_NAME];
     };
   }, []);
 
@@ -190,16 +206,31 @@ function Blogs() {
         <div className="logo">
           Sinha Synopsis<span>.</span>
         </div>
+
         <nav className="nav">
-          <Link to="/">Home</Link>
+          <Link
+            to="/"
+            onClick={(e) => {
+              e.preventDefault();
+              window.location.href = "/sinhasynopsis/";
+            }}
+          >
+            Home
+          </Link>
           <Link to="/about">About</Link>
           <Link to="/blogs">Blogs</Link>
           <Link to="/contact">Contact</Link>
         </nav>
       </header>
 
-      {/* BOOKSHELF */}
+      {/* BLOG LIST */}
       <section className="library">
+        {books.length === 0 && (
+          <p style={{ color: "white", zIndex: 10 }}>
+            Loading blogs…
+          </p>
+        )}
+
         {books.map((book) => {
           const isActive = activeBook === book.id;
 
@@ -209,7 +240,7 @@ function Blogs() {
               className={`book ${isActive ? "active" : ""}`}
               style={{
                 "--tilt": `${book.tilt}deg`,
-                "--color": book.color
+                "--color": book.color,
               }}
               onClick={() =>
                 setActiveBook(isActive ? null : book.id)
@@ -220,7 +251,7 @@ function Blogs() {
                 <span className="book-title">{book.title}</span>
               </div>
 
-              {/* BOOK PREVIEW */}
+              {/* BOOK DETAIL */}
               <div
                 className="book-detail clickable"
                 onClick={(e) => {
