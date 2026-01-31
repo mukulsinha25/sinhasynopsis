@@ -1,6 +1,7 @@
 import "../App.css";
 import profilePic from "../assets/mukul.jpeg";
 import bgVideo from "../assets/background.mp4";
+import { Link } from "react-router-dom";
 
 function About() {
   return (
@@ -16,9 +17,13 @@ function About() {
       <header className="header">
         <div className="logo">Sinha Synopsis<span>.</span></div>
 
-        <nav className="nav">
-          <a href="/">Home</a>
-          <a href="/about">About</a>
+        // <nav className="nav">
+        //   <a href="/">Home</a>
+        //   <a href="/about">About</a>
+        // </nav>
+      <nav className="nav">
+          <Link to="/">Home</Link>
+          <Link to="/about">About</Link>
         </nav>
       </header>
 
