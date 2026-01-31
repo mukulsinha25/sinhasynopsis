@@ -17,12 +17,12 @@ function About() {
       <header className="header">
         <div className="logo">Sinha Synopsis<span>.</span></div>
 
-        <nav className="nav">
-          <a href="#/">Home</a>
-          <a href="/about">About</a>
-        </nav>
+        // <nav className="nav">
+        //   <a href="#/">Home</a>
+        //   <a href="/about">About</a>
+        // </nav>
       <nav className="nav">
-          <Link to="/">Home</Link>
+          <Link to="#/">Home</Link>
           <Link to="/about">About</Link>
         </nav>
       </header>
