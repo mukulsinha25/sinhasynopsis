@@ -22,7 +22,7 @@ function About() {
         //   <a href="/about">About</a>
         // </nav>
       <nav className="nav">
-          <Link to="#/">Home</Link>
+          <Link to="https://sinhasynopsis.com/#/">Home</Link>
           <Link to="/about">About</Link>
         </nav>
       </header>
