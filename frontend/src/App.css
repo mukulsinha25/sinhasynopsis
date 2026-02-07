@@ -141,8 +141,8 @@ body {
   cursor: pointer;
   transition: all 0.25s ease;
   position: absolute;
-  top: 400px;      /* move down */
-  left: 30px;
+  /* top: 400px;       */
+  /* left: 30px; */
 }
 .hero-cta:hover {
   transform: translateY(-4px);
