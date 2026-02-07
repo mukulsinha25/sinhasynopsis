@@ -1,15 +1,15 @@
 {
   "files": {
-    "main.css": "/static/css/main.9e5c8407.css",
+    "main.css": "/static/css/main.cc4bb760.css",
     "main.js": "/static/js/main.b25ecc80.js",
     "static/media/background.mp4": "/static/media/background.41cd1c268db3ca6cacac.mp4",
     "static/media/mukul.jpeg": "/static/media/mukul.abe6f4d2f20e333ba815.jpeg",
     "index.html": "/index.html",
-    "main.9e5c8407.css.map": "/static/css/main.9e5c8407.css.map",
+    "main.cc4bb760.css.map": "/static/css/main.cc4bb760.css.map",
     "main.b25ecc80.js.map": "/static/js/main.b25ecc80.js.map"
   },
   "entrypoints": [
-    "static/css/main.9e5c8407.css",
+    "static/css/main.cc4bb760.css",
     "static/js/main.b25ecc80.js"
   ]
 }
