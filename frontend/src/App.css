@@ -904,7 +904,16 @@ body {
     border-radius: 10px;
   }
 }
-
+.book-detail p {
+  font-size: 1.0rem;        
+  font-family: 'Pacifico', cursive;
+  line-height: 1.5;
+  color: #333;
+  margin: 0;
+  writing-mode:sideways-lr;
+  text-orientation:mixed;
+  transform: rotate(90deg); 
+}
 
 
 
